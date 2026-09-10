@@ -11,7 +11,6 @@ import { MarksBenchmark } from './components/MarksBenchmark';
 import { AssignmentKanban } from './components/AssignmentKanban';
 import { GpaTrendChart } from './components/GpaTrendChart';
 import { StudyTimerLogger } from './components/StudyTimerLogger';
-import { MobileDevicePreview } from './components/MobileDevicePreview';
 import type { AssignmentItem, StudySession } from './types';
 
 export const App: React.FC = () => {
@@ -19,7 +18,6 @@ export const App: React.FC = () => {
   const [student] = useState(INITIAL_STUDENT_PROFILE);
   const [selectedSemester, setSelectedSemester] = useState<number>(5);
   const [semesterDataMap, setSemesterDataMap] = useState(SEMESTER_DATASET);
-  const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   // Live Focus Timer State
   const [timerSeconds, setTimerSeconds] = useState<number>(1420); // ~23m 40s
@@ -213,112 +211,95 @@ export const App: React.FC = () => {
         isTimerRunning={isTimerRunning}
         onToggleTimer={handleToggleTimer}
         onResetTimer={handleResetTimer}
-        viewMode={viewMode}
-        onToggleViewMode={() => setViewMode(prev => prev === 'desktop' ? 'mobile' : 'desktop')}
         backlogCount={currentSemesterData.backlogs.length}
         pendingAssignmentCount={pendingAssignmentsCount}
       />
 
       {/* 2. MAIN VIEW CONTAINER */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        
-        {viewMode === 'mobile' ? (
-          /* MOBILE PHONE SIMULATOR VIEW */
-          <MobileDevicePreview
-            student={student}
-            semesterData={currentSemesterData}
-            gpaProgression={GPA_PROGRESSION}
-            timerSeconds={timerSeconds}
-            isTimerRunning={isTimerRunning}
-            onToggleTimer={handleToggleTimer}
+        <div className="space-y-6 animate-in fade-in duration-200">
+          
+          {/* TERM STATUS / ARCHIVED NOTICE */}
+          {selectedSemester !== student.currentSemester && (
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 px-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-md">
+              <div className="flex items-center gap-2.5 text-slate-300">
+                <span className="w-2 h-2 rounded-full bg-slate-500" />
+                <span>
+                  Viewing <strong>Archived Academic Records</strong> for <strong>Semester {selectedSemester} ({currentSemesterData.academicYear})</strong>. All course grades, assignments, and exam credits for this term are officially finalized.
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedSemester(student.currentSemester)}
+                className="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl font-bold transition-all text-[11px] shrink-0"
+              >
+                Return to Active Sem {student.currentSemester} →
+              </button>
+            </div>
+          )}
+
+          {/* BACKLOG ALERT BANNER */}
+          <BacklogAlert
+            backlogs={currentSemesterData.backlogs}
+            onToggleTopic={handleToggleBacklogTopic}
+            onClearBacklog={handleClearBacklog}
           />
-        ) : (
-          /* DESKTOP RESPONSIVE BENTO GRID VIEW */
-          <div className="space-y-6 animate-in fade-in duration-200">
+
+          {/* TOP ROW: ATTENDANCE & MARKS BENCHMARK */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            {/* TERM STATUS / ARCHIVED NOTICE */}
-            {selectedSemester !== student.currentSemester && (
-              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 px-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-md">
-                <div className="flex items-center gap-2.5 text-slate-300">
-                  <span className="w-2 h-2 rounded-full bg-slate-500" />
-                  <span>
-                    Viewing <strong>Archived Academic Records</strong> for <strong>Semester {selectedSemester} ({currentSemesterData.academicYear})</strong>. All course grades, assignments, and exam credits for this term are officially finalized.
-                  </span>
-                </div>
-                <button
-                  onClick={() => setSelectedSemester(student.currentSemester)}
-                  className="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl font-bold transition-all text-[11px] shrink-0"
-                >
-                  Return to Active Sem {student.currentSemester} →
-                </button>
-              </div>
-            )}
-
-            {/* BACKLOG ALERT BANNER */}
-            <BacklogAlert
-              backlogs={currentSemesterData.backlogs}
-              onToggleTopic={handleToggleBacklogTopic}
-              onClearBacklog={handleClearBacklog}
-            />
-
-            {/* TOP ROW: ATTENDANCE & MARKS BENCHMARK */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              
-              {/* Attendance Tracker (5 cols on large screens) */}
-              <div className="lg:col-span-5">
-                <AttendanceTracker
-                  attendanceList={currentSemesterData.attendance}
-                  onSimulateClass={handleSimulateClass}
-                  onResetSimulation={handleResetSimulation}
-                />
-              </div>
-
-              {/* Marks vs Cohort Average (7 cols on large screens) */}
-              <div className="lg:col-span-7">
-                <MarksBenchmark
-                  marksList={currentSemesterData.marks}
-                />
-              </div>
-
+            {/* Attendance Tracker (5 cols on large screens) */}
+            <div className="lg:col-span-5">
+              <AttendanceTracker
+                attendanceList={currentSemesterData.attendance}
+                onSimulateClass={handleSimulateClass}
+                onResetSimulation={handleResetSimulation}
+              />
             </div>
 
-            {/* MIDDLE ROW: GPA PROGRESSION CURVE & STUDY HOURS CORRELATION */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              
-              {/* GPA Progression (6 cols) */}
-              <div className="lg:col-span-6">
-                <GpaTrendChart
-                  history={GPA_PROGRESSION}
-                  targetCgpa={student.targetCgpa}
-                />
-              </div>
-
-              {/* Study Hours & Correlation (6 cols) */}
-              <div className="lg:col-span-6">
-                <StudyTimerLogger
-                  studySessions={currentSemesterData.studySessions}
-                  timerSeconds={timerSeconds}
-                  isTimerRunning={isTimerRunning}
-                  onToggleTimer={handleToggleTimer}
-                  onResetTimer={handleResetTimer}
-                  onAddStudySession={handleAddStudySession}
-                />
-              </div>
-
-            </div>
-
-            {/* BOTTOM ROW: ASSIGNMENT PIPELINE & KANBAN (FULL 12 COLS) */}
-            <div>
-              <AssignmentKanban
-                assignments={currentSemesterData.assignments}
-                onStatusChange={handleAssignmentStatusChange}
-                onAddAssignment={handleAddAssignment}
+            {/* Marks vs Cohort Average (7 cols on large screens) */}
+            <div className="lg:col-span-7">
+              <MarksBenchmark
+                marksList={currentSemesterData.marks}
               />
             </div>
 
           </div>
-        )}
 
+          {/* MIDDLE ROW: GPA PROGRESSION CURVE & STUDY HOURS CORRELATION */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* GPA Progression (6 cols) */}
+            <div className="lg:col-span-6">
+              <GpaTrendChart
+                history={GPA_PROGRESSION}
+                targetCgpa={student.targetCgpa}
+              />
+            </div>
+
+            {/* Study Hours & Correlation (6 cols) */}
+            <div className="lg:col-span-6">
+              <StudyTimerLogger
+                studySessions={currentSemesterData.studySessions}
+                timerSeconds={timerSeconds}
+                isTimerRunning={isTimerRunning}
+                onToggleTimer={handleToggleTimer}
+                onResetTimer={handleResetTimer}
+                onAddStudySession={handleAddStudySession}
+              />
+            </div>
+
+          </div>
+
+          {/* BOTTOM ROW: ASSIGNMENT PIPELINE & KANBAN (FULL 12 COLS) */}
+          <div>
+            <AssignmentKanban
+              assignments={currentSemesterData.assignments}
+              onStatusChange={handleAssignmentStatusChange}
+              onAddAssignment={handleAddAssignment}
+            />
+          </div>
+
+        </div>
       </main>
 
       {/* FOOTER */}

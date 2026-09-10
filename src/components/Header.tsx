@@ -7,8 +7,6 @@ import {
   Play, 
   Pause, 
   RotateCcw, 
-  Smartphone, 
-  Monitor, 
   CheckCircle2,
   AlertTriangle
 } from 'lucide-react';
@@ -22,8 +20,6 @@ interface HeaderProps {
   isTimerRunning: boolean;
   onToggleTimer: () => void;
   onResetTimer: () => void;
-  viewMode: 'desktop' | 'mobile';
-  onToggleViewMode: () => void;
   backlogCount: number;
   pendingAssignmentCount: number;
 }
@@ -36,8 +32,6 @@ export const Header: React.FC<HeaderProps> = ({
   isTimerRunning,
   onToggleTimer,
   onResetTimer,
-  viewMode,
-  onToggleViewMode,
   backlogCount,
   pendingAssignmentCount
 }) => {
@@ -58,35 +52,22 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
         
         {/* Brand & Student Identity */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <GraduationCap className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                  StudentSphere
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
-                  v2.4
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 font-medium hidden sm:block">
-                {student.institution}
-              </p>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+            <GraduationCap className="w-5 h-5 text-white" />
           </div>
-
-          {/* Mobile Right Quick Action Icons */}
-          <div className="flex items-center gap-2 md:hidden">
-            <button 
-              onClick={onToggleViewMode}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300"
-              title="Toggle View Mode"
-            >
-              {viewMode === 'desktop' ? <Smartphone className="w-4 h-4 text-indigo-400" /> : <Monitor className="w-4 h-4 text-emerald-400" />}
-            </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                StudentSphere
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+                v2.4
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 font-medium hidden sm:block">
+              {student.institution}
+            </p>
           </div>
         </div>
 
@@ -225,25 +206,6 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
           </div>
-
-          {/* Desktop/Mobile View Switcher Toggle */}
-          <button
-            onClick={onToggleViewMode}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-medium text-slate-300 transition-all"
-            title="Preview Layout Form Factor"
-          >
-            {viewMode === 'desktop' ? (
-              <>
-                <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Mobile Preview</span>
-              </>
-            ) : (
-              <>
-                <Monitor className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Desktop Grid</span>
-              </>
-            )}
-          </button>
 
           {/* Student Profile Quick Badge */}
           <div className="flex items-center gap-2.5 pl-2 border-l border-slate-800">
